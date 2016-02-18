@@ -6,7 +6,14 @@ module Rottweiler
         before_create :create_rottweiler_user
 
         def create_rottweiler_user
-          bindging.pry
+          if self.valid?
+            response = rottweiler_client.create_user(whitelist_attr.merge({password: self.password}))
+            if response.code == 200
+              self.rottweiler_id = JSON(response.body)["id"]
+            else
+              false
+            end
+          end
         end
         def sync_with_rottweiler
           rottweiler_client.update_user({user_id: self.rottweiler_id, attributes: whitelist_attr}) 
