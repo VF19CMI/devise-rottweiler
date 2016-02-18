@@ -2,7 +2,12 @@ module Rottweiler
   module Callbacks
     def rottweilerize
       class_eval do
-        after_save :sync_with_rottweiler
+        after_update :sync_with_rottweiler
+        before_create :create_rottweiler_user
+
+        def create_rottweiler_user
+          bindging.pry
+        end
         def sync_with_rottweiler
           rottweiler_client.update_user({user_id: self.rottweiler_id, attributes: whitelist_attr}) 
         end
