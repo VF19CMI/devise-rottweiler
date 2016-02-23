@@ -12,9 +12,9 @@ module Devise
       
       included do
         attr_reader :current_password
-        attr_accessor :password
+        attr_accessor :password, :rottweiler_user_already_exists
       end
-    
+        
       def valid_password?
         rottweiler_client.validate_credentials({email: email, password: password})
       end
@@ -45,13 +45,32 @@ module Devise
 
       protected
       module ClassMethods
-        def find_for_database_authentication(conditions)
-          db = find_for_authentication(conditions)
-          rottweiler = rottweiler_client.check_user(conditions)
-          if db.nil?
-            nil 
+        def find_in_rottweiler(conditions)
+          rottweiler_client.check_user(conditions)
+        end
+        
+        def find_for_database_authentication(conditions,password)
+          local_user = find_for_authentication(conditions)
+          return local_user if local_user.present?
+          if rottweiler_client.validate_credentials(conditions.merge({password: password}))
+            rottweiler_response = rottweiler_client.check_user(conditions)
+            rottweiler_user = JSON(rottweiler_response.body)
+            rottweiler_user.delete("encrypted_password")
+            rottweiler_user["rottweiler_id"] = rottweiler_user.delete("id")
+
+            if find_by(rottweiler_id: rottweiler_user["rottweiler_id"]).present?
+              db_user = find_by(rottweiler_id: rottweiler_user["rottweiler_id"])   
+              db_user.update_columns(rottweiler_user)
+              return db_user
+            else
+              db_user = self.new(rottweiler_user.merge({password: "Bb12345678"})) #crappy fake password because of validation
+              db_user.rottweiler_user_already_exists = true
+              db_user.skip_confirmation!
+              db_user.save!
+              return db_user
+            end
           else
-            db
+            nil 
           end
         end
       end

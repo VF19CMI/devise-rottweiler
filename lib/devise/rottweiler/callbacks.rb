@@ -3,7 +3,7 @@ module Rottweiler
     def rottweilerize
       class_eval do
         after_update :sync_with_rottweiler
-        before_create :create_rottweiler_user
+        before_create :create_rottweiler_user, unless: :rottweiler_user_already_exists
 
         def create_rottweiler_user
           if self.valid?
@@ -16,11 +16,14 @@ module Rottweiler
           end
         end
         def sync_with_rottweiler
-          rottweiler_client.update_user({user_id: self.rottweiler_id, attributes: whitelist_attr}) 
+          if !changed.grep(/^first_name|last_name|email$/).empty? || !password.nil?
+            rottweiler_client.update_user({user_id: self.rottweiler_id, attributes: whitelist_attr}) 
+          end
         end
         def whitelist_attr
           wanted_keys = %w[first_name last_name email]
           attr = self.attributes.select {|key,_| wanted_keys.include? key}
+          return attr if password.nil?
           return attr.merge({password: password}) if !password.nil?
         end
         def rottweiler_client
