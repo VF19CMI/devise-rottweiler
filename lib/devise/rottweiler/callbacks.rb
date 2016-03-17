@@ -4,14 +4,18 @@ module Rottweiler
       class_eval do
         after_update :sync_with_rottweiler
         before_create :create_rottweiler_user, unless: :rottweiler_user_already_exists
-
+        validate :email_is_not_taken_in_rottweiler, on: :create
+        
+        def email_is_not_taken_in_rottweiler
+          response = rottweiler_client.check_user({email: self.email})
+          self.errors.add(:email, 'already exists :)') if response.code == 200
+        end
+        
         def create_rottweiler_user
           if self.valid?
             response = rottweiler_client.create_user(whitelist_attr.merge({password: self.password}))
             if response.code == 200
               self.rottweiler_id = JSON(response.body)["id"]
-            else
-              false
             end
           end
         end
