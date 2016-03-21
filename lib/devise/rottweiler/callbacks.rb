@@ -4,7 +4,7 @@ module Rottweiler
       class_eval do
         after_update :sync_with_rottweiler
         before_create :create_rottweiler_user, unless: :rottweiler_user_already_exists
-        validate :email_is_not_taken_in_rottweiler, on: :create
+        validate :email_is_not_taken_in_rottweiler, on: :create, unless: :rottweiler_user_already_exists
         
         def email_is_not_taken_in_rottweiler
           response = rottweiler_client.check_user({email: self.email})
