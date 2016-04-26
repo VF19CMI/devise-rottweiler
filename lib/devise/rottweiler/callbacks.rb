@@ -27,8 +27,9 @@ module Rottweiler
         def whitelist_attr
           wanted_keys = %w[first_name last_name email]
           attr = self.attributes.select {|key,_| wanted_keys.include? key}
-          return attr if password.nil?
-          return attr.merge({password: password}) if !password.nil?
+          attr.merge!({password: password}) if !password.nil?
+          attr.merge!({avatar_url: self.avatar.url}) if self.respond_to?(:avatar)
+          return attr
         end
         def rottweiler_client
           @_rottweiler_client = Rottweiler::Client.new(Devise.rottweiler_url)
