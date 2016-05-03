@@ -20,7 +20,7 @@ module Rottweiler
           end
         end
         def sync_with_rottweiler
-          if !changed.grep(/^first_name|last_name|email|avatar$/).empty? || !password.nil?
+          if !changed.grep(/^first_name|last_name|email|avatar_file_name$/).empty? || !password.nil?
             rottweiler_client.update_user({user_id: self.rottweiler_id, attributes: whitelist_attr}) 
           end
         end

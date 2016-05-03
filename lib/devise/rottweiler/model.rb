@@ -1,8 +1,12 @@
 require 'devise/models'
 require 'rottweiler/client'
-
+require "open-uri"
 def rottweiler_client
   @_rottweiler_client = Rottweiler::Client.new(Devise.rottweiler_url)
+end
+
+def uri_parser(url)
+  open(url) rescue nil
 end
 
 module Devise
@@ -57,7 +61,7 @@ module Devise
             rottweiler_user = JSON(rottweiler_response.body)
             rottweiler_user.delete("encrypted_password")
             rottweiler_user["rottweiler_id"] = rottweiler_user.delete("id")
-            rottweiler_user["avatar"] = URI.parse(rottweiler_user.delete("avatar_url")) 
+            avatar_url = uri_parser(rottweiler_user.delete("avatar_url")) 
 
             if find_by(rottweiler_id: rottweiler_user["rottweiler_id"]).present?
               db_user = find_by(rottweiler_id: rottweiler_user["rottweiler_id"])   
@@ -68,6 +72,7 @@ module Devise
               db_user.rottweiler_user_already_exists = true
               db_user.skip_confirmation!
               db_user.save!
+              db_user.update_attributes(avatar: avatar_url) if db_user.respond_to?(:avatar)
               return db_user
             end
           else
