@@ -57,10 +57,11 @@ module Devise
             rottweiler_user = JSON(rottweiler_response.body)
             rottweiler_user.delete("encrypted_password")
             rottweiler_user["rottweiler_id"] = rottweiler_user.delete("id")
+            rottweiler_user["avatar"] = rottweiler_user.delete("avatar_url") 
 
             if find_by(rottweiler_id: rottweiler_user["rottweiler_id"]).present?
               db_user = find_by(rottweiler_id: rottweiler_user["rottweiler_id"])   
-              db_user.update_columns(rottweiler_user)
+              db_user.update_attributes(rottweiler_user)
               return db_user
             else
               db_user = self.new(rottweiler_user.merge({password: "Bb12345678"})) #crappy fake password because of validation
