@@ -28,7 +28,9 @@ module Rottweiler
           wanted_keys = %w[first_name last_name email]
           attr = self.attributes.select {|key,_| wanted_keys.include? key}
           attr.merge!({password: password}) if !password.nil?
-          attr.merge!({avatar_url: self.avatar.url}) if self.respond_to?(:avatar)
+          if self.avatar.exists? && self.respond_to?(:avatar)
+            attr.merge!({avatar_url: self.avatar.url})
+          end
           return attr
         end
         def rottweiler_client
