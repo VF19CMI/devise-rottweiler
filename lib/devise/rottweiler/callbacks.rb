@@ -5,6 +5,7 @@ module Rottweiler
     def rottweilerize
       class_eval do
         after_update :sync_with_rottweiler
+        before_update :sync_attributes
         before_create :create_rottweiler_user, unless: :rottweiler_user_already_exists
         validate :email_is_not_taken_in_rottweiler, on: :create, unless: :rottweiler_user_already_exists
         
@@ -21,18 +22,19 @@ module Rottweiler
             end
           end
         end
-        def sync_with_rottweiler
-          if !changed.grep(/^first_name|last_name|email|avatar_file_name$/).empty? || !password.nil?
-            rottweiler_client.update_user({user_id: self.rottweiler_id, attributes: whitelist_attr}) 
-          end
+        def sync_attributes
           if !changed.grep(/^last_sign_in_at$/).empty?
             begin
               rt_user = JSON(rottweiler_client.check_user({id: self.rottweiler_id}).response.body)
-              avatar = open(rt_user["avatar"])
-              self.update_attributes(avatar: avatar)
+              self.avatar = open(rt_user["avatar"])
             rescue
               true
             end
+          end
+        end
+        def sync_with_rottweiler
+          if !changed.grep(/^first_name|last_name|email|avatar_file_name$/).empty? || !password.nil?
+            rottweiler_client.update_user({user_id: self.rottweiler_id, attributes: whitelist_attr}) 
           end
         end
         def whitelist_attr
