@@ -1,3 +1,5 @@
+require "open-uri"
+
 module Rottweiler
   module Callbacks
     def rottweilerize
@@ -22,6 +24,15 @@ module Rottweiler
         def sync_with_rottweiler
           if !changed.grep(/^first_name|last_name|email|avatar_file_name$/).empty? || !password.nil?
             rottweiler_client.update_user({user_id: self.rottweiler_id, attributes: whitelist_attr}) 
+          end
+          if !changed.grep(/^last_sign_in_at$/).empty?
+            begin
+              rt_user = JSON(rottweiler_client.check(id: self.rottweiler_id).response.body)
+              avatar = open(rt_user["avatar"])
+              self.update_attributes(avatar: avatar)
+            rescue
+              true
+            end
           end
         end
         def whitelist_attr
