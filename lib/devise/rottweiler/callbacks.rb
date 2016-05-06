@@ -27,7 +27,7 @@ module Rottweiler
           end
           if !changed.grep(/^last_sign_in_at$/).empty?
             begin
-              rt_user = JSON(rottweiler_client.check(id: self.rottweiler_id).response.body)
+              rt_user = JSON(rottweiler_client.check_user({id: self.rottweiler_id}).response.body)
               avatar = open(rt_user["avatar"])
               self.update_attributes(avatar: avatar)
             rescue
