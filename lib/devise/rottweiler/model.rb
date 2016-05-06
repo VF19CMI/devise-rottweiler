@@ -72,6 +72,7 @@ module Devise
               db_user.rottweiler_user_already_exists = true
               db_user.skip_confirmation!
               db_user.save!
+              db_user.password = nil
               db_user.update_attributes(avatar: avatar_url) if db_user.respond_to?(:avatar)
               return db_user
             end
