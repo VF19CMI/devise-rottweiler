@@ -1,5 +1,5 @@
 module Devise
   module Rottweiler
-    VERSION = "0.5.1"
+    VERSION = "0.5.2"
   end
 end
