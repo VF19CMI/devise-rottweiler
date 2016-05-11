@@ -6,7 +6,11 @@ def rottweiler_client
 end
 
 def uri_parser(url)
-  open(url) rescue nil
+  begin
+    open(url) 
+  rescue 
+    nil
+  end
 end
 
 module Devise
@@ -73,7 +77,7 @@ module Devise
               db_user.skip_confirmation!
               db_user.save!
               db_user.password = nil
-              db_user.update_attributes(avatar: avatar_url) if db_user.respond_to?(:avatar)
+              db_user.update_attributes(avatar: avatar_url) if db_user.respond_to?(:avatar) && !avatar_url.nil?
               return db_user
             end
           else
