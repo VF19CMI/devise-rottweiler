@@ -65,7 +65,7 @@ module Devise
             rottweiler_user = JSON(rottweiler_response.body)
             rottweiler_user.delete("encrypted_password")
             rottweiler_user["rottweiler_id"] = rottweiler_user.delete("id")
-            avatar_url = uri_parser(rottweiler_user.delete("avatar_url")) 
+            avatar_url = uri_parser(rottweiler_user.delete("avatar")) 
 
             if find_by(rottweiler_id: rottweiler_user["rottweiler_id"]).present?
               db_user = find_by(rottweiler_id: rottweiler_user["rottweiler_id"])   
